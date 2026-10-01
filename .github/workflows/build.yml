@@ -18,9 +18,11 @@ jobs:
           java-version: '17'
       - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
         with:
-          packages: 'platform-tools'   # ← це виправляє помилку з 'tools'
+          packages: 'platform-tools'
       - name: Install SDK packages
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+      - name: Make gradlew executable
+        run: chmod +x gradlew
       - name: Unit tests
         run: ./gradlew test
       - name: Build debug APK
@@ -43,9 +45,11 @@ jobs:
           java-version: '17'
       - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
         with:
-          packages: 'platform-tools'   # ← те саме виправлення
+          packages: 'platform-tools'
       - name: Install SDK packages
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+      - name: Make gradlew executable
+        run: chmod +x gradlew
       - name: Restore keystore from secrets
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
