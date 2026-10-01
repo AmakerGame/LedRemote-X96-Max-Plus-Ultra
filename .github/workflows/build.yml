@@ -11,19 +11,21 @@ jobs:
   test-and-debug:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v4
         with:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
+        with:
+          packages: 'platform-tools'   # ← це виправляє помилку з 'tools'
       - name: Install SDK packages
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
       - name: Unit tests
         run: ./gradlew test
       - name: Build debug APK
         run: ./gradlew assembleDebug
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
         with:
           name: ledremote-debug-apk
           path: app/build/outputs/apk/debug/*.apk
@@ -34,12 +36,14 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v4
         with:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
+        with:
+          packages: 'platform-tools'   # ← те саме виправлення
       - name: Install SDK packages
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
       - name: Restore keystore from secrets
@@ -59,6 +63,6 @@ jobs:
       - name: Build signed release APK
         run: ./gradlew assembleRelease
       - name: Attach APK to the release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v2
         with:
           files: app/build/outputs/apk/release/*.apk
