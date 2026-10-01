@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Управление LED</string>
+
+    <string name="checking_root">Проверка root-доступа…</string>
+    <string name="grant_root">Предоставьте root!</string>
+    <string name="retry">Повторить</string>
+
+    <string name="language">Язык</string>
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+
+    <string name="led_display">Дисплей (VFD)</string>
+    <string name="led_display_hint">Главный экран приставки — только Включить/Выключить</string>
+    <string name="led_green">Зелёный LED</string>
+    <string name="led_wlan">Wi-Fi LED</string>
+    <string name="led_ethernet">Ethernet LED</string>
+    <string name="led_usb">USB LED</string>
+    <string name="led_card">Карта (SD) LED</string>
+    <string name="led_app">App LED</string>
+    <string name="led_aging">Aging LED (тестовый)</string>
+
+    <string name="mode_off">Выключить</string>
+    <string name="mode_on">Включить</string>
+    <string name="mode_app_active">Если программа активна</string>
+    <string name="mode_script">Скрипт</string>
+    <string name="mode_time">Время (от-до)</string>
+
+    <string name="script_internet">Интернет (горит, если есть соединение)</string>
+    <string name="script_sdcard">SD-карта (горит, если вставлена)</string>
+    <string name="script_launcher">Apps (горит, если открыт главный лаунчер)</string>
+
+    <string name="select_apps_hint">Выберите одно или несколько приложений:</string>
+    <string name="time_from">От:</string>
+    <string name="time_to">До:</string>
+
+    <string name="display_status_on">Дисплей: включён</string>
+    <string name="display_status_off">Дисплей: выключен (нужен перезапуск для включения)</string>
+    <string name="restart_required">Перезапустите приставку</string>
+    <string name="command_failed">Не удалось выполнить команду</string>
+
+    <string name="reboot_now">Перезапустить сейчас</string>
+    <string name="reboot_title">Перезапуск приставки</string>
+    <string name="reboot_message">Приставка будет перезагружена сейчас. Продолжить?</string>
+    <string name="reboot_confirm">Перезапустить</string>
+
+    <string name="display_off_title">Дисплей выключен</string>
+    <string name="display_off_message">Дисплей (VFD) сейчас полностью выключен, поэтому изменения на этом LED не будут видны, пока вы не включите дисплей и не перезапустите приставку.</string>
+    <string name="go_to_display">Перейти к дисплею</string>
+    <string name="configure_anyway">Всё равно настроить</string>
+
+    <string name="grant_usage_access">Предоставить доступ к статистике использования (для режимов \"Если программа активна\" и \"Apps\")</string>
+
+    <string name="monitor_channel_name">Мониторинг LED</string>
+    <string name="monitor_running">Следит за состоянием LED-индикаторов</string>
+</resources>

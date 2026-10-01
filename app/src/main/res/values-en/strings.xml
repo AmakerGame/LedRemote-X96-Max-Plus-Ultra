@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LED Control</string>
+
+    <string name="checking_root">Checking root access…</string>
+    <string name="grant_root">Grant root access!</string>
+    <string name="retry">Retry</string>
+
+    <string name="language">Language</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="led_display">Display (VFD)</string>
+    <string name="led_display_hint">Main box screen — Enable/Disable only</string>
+    <string name="led_green">Green LED</string>
+    <string name="led_wlan">Wi-Fi LED</string>
+    <string name="led_ethernet">Ethernet LED</string>
+    <string name="led_usb">USB LED</string>
+    <string name="led_card">Card (SD) LED</string>
+    <string name="led_app">App LED</string>
+    <string name="led_aging">Aging LED (test)</string>
+
+    <string name="mode_off">Disable</string>
+    <string name="mode_on">Enable</string>
+    <string name="mode_app_active">If app is active</string>
+    <string name="mode_script">Script</string>
+    <string name="mode_time">Time (from-to)</string>
+
+    <string name="script_internet">Internet (on if connected)</string>
+    <string name="script_sdcard">SD card (on if inserted)</string>
+    <string name="script_launcher">Apps (on if the home launcher is open)</string>
+
+    <string name="select_apps_hint">Select one or more apps:</string>
+    <string name="time_from">From:</string>
+    <string name="time_to">To:</string>
+
+    <string name="display_status_on">Display: enabled</string>
+    <string name="display_status_off">Display: disabled (restart required to enable)</string>
+    <string name="restart_required">Restart the device</string>
+    <string name="command_failed">Command failed</string>
+
+    <string name="reboot_now">Reboot now</string>
+    <string name="reboot_title">Reboot device</string>
+    <string name="reboot_message">The device will reboot now. Continue?</string>
+    <string name="reboot_confirm">Reboot</string>
+
+    <string name="display_off_title">Display is off</string>
+    <string name="display_off_message">The display (VFD) is currently fully disabled, so changes to this LED won\'t be visible until you enable the display and reboot the device.</string>
+    <string name="go_to_display">Go to display</string>
+    <string name="configure_anyway">Configure anyway</string>
+
+    <string name="grant_usage_access">Grant usage access (required for \"If app is active\" and \"Apps\" modes)</string>
+
+    <string name="monitor_channel_name">LED monitor</string>
+    <string name="monitor_running">Watching LED indicator state</string>
+</resources>
