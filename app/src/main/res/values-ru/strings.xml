@@ -7,6 +7,7 @@
     <string name="retry">Повторить</string>
 
     <string name="language">Язык</string>
+    <string name="about">О программе</string>
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
 
@@ -26,9 +27,8 @@
     <string name="mode_script">Скрипт</string>
     <string name="mode_time">Время (от-до)</string>
 
-    <string name="script_internet">Интернет (горит, если есть соединение)</string>
-    <string name="script_sdcard">SD-карта (горит, если вставлена)</string>
-    <string name="script_launcher">Apps (горит, если открыт главный лаунчер)</string>
+    <string name="custom_script_hint">Свой скрипт для этого LED (выполняется с root). Код завершения 0 = включить, любой другой = выключить.</string>
+    <string name="custom_script_placeholder">например: ping -c1 -W1 8.8.8.8</string>
 
     <string name="select_apps_hint">Выберите одно или несколько приложений:</string>
     <string name="time_from">От:</string>
@@ -36,8 +36,13 @@
 
     <string name="display_status_on">Дисплей: включён</string>
     <string name="display_status_off">Дисплей: выключен (нужен перезапуск для включения)</string>
-    <string name="restart_required">Перезапустите приставку</string>
+    <string name="display_status_pending">Дисплей: включён, ожидает перезапуска приставки</string>
     <string name="command_failed">Не удалось выполнить команду</string>
+
+    <string name="restart_apply_title">Нужен перезапуск</string>
+    <string name="restart_apply_message">Чтобы дисплей физически включился, приставку нужно перезапустить. Сделать это сейчас?</string>
+    <string name="restart_now_yes">Да, перезапустить</string>
+    <string name="restart_later">Позже</string>
 
     <string name="reboot_now">Перезапустить сейчас</string>
     <string name="reboot_title">Перезапуск приставки</string>
@@ -49,8 +54,18 @@
     <string name="go_to_display">Перейти к дисплею</string>
     <string name="configure_anyway">Всё равно настроить</string>
 
-    <string name="grant_usage_access">Предоставить доступ к статистике использования (для режимов \"Если программа активна\" и \"Apps\")</string>
+    <string name="grant_usage_access">Предоставить доступ к статистике использования (нужно для режима \"Если программа активна\")</string>
+    <string name="led_hidden_by_display_off">не видно, дисплей выключен</string>
 
     <string name="monitor_channel_name">Мониторинг LED</string>
     <string name="monitor_running">Следит за состоянием LED-индикаторов</string>
+
+    <!-- О программе -->
+    <string name="about_title">О программе</string>
+    <string name="about_build_label">Сборка</string>
+    <string name="about_build_value">X96 Max Plus Ultra (Amlogic S905X4)</string>
+    <string name="about_version_label">Версия</string>
+    <string name="about_github_label">Исходный код на GitHub</string>
+    <string name="about_developer_label">Разработчик</string>
+    <string name="about_developer_value">Edytor Studio</string>
 </resources>

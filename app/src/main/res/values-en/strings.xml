@@ -7,6 +7,7 @@
     <string name="retry">Retry</string>
 
     <string name="language">Language</string>
+    <string name="about">About</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
 
@@ -26,9 +27,8 @@
     <string name="mode_script">Script</string>
     <string name="mode_time">Time (from-to)</string>
 
-    <string name="script_internet">Internet (on if connected)</string>
-    <string name="script_sdcard">SD card (on if inserted)</string>
-    <string name="script_launcher">Apps (on if the home launcher is open)</string>
+    <string name="custom_script_hint">Your own script for this LED (runs as root). Exit code 0 = on, anything else = off.</string>
+    <string name="custom_script_placeholder">e.g.: ping -c1 -W1 8.8.8.8</string>
 
     <string name="select_apps_hint">Select one or more apps:</string>
     <string name="time_from">From:</string>
@@ -36,8 +36,13 @@
 
     <string name="display_status_on">Display: enabled</string>
     <string name="display_status_off">Display: disabled (restart required to enable)</string>
-    <string name="restart_required">Restart the device</string>
+    <string name="display_status_pending">Display: enabled, awaiting device restart</string>
     <string name="command_failed">Command failed</string>
+
+    <string name="restart_apply_title">Restart required</string>
+    <string name="restart_apply_message">For the display to physically turn back on, the device needs to restart. Do it now?</string>
+    <string name="restart_now_yes">Yes, restart</string>
+    <string name="restart_later">Later</string>
 
     <string name="reboot_now">Reboot now</string>
     <string name="reboot_title">Reboot device</string>
@@ -49,8 +54,18 @@
     <string name="go_to_display">Go to display</string>
     <string name="configure_anyway">Configure anyway</string>
 
-    <string name="grant_usage_access">Grant usage access (required for \"If app is active\" and \"Apps\" modes)</string>
+    <string name="grant_usage_access">Grant usage access (required for the \"If app is active\" mode)</string>
+    <string name="led_hidden_by_display_off">not visible, display is off</string>
 
     <string name="monitor_channel_name">LED monitor</string>
     <string name="monitor_running">Watching LED indicator state</string>
+
+    <!-- About -->
+    <string name="about_title">About</string>
+    <string name="about_build_label">Build</string>
+    <string name="about_build_value">X96 Max Plus Ultra (Amlogic S905X4)</string>
+    <string name="about_version_label">Version</string>
+    <string name="about_github_label">Source code on GitHub</string>
+    <string name="about_developer_label">Developer</string>
+    <string name="about_developer_value">Edytor Studio</string>
 </resources>

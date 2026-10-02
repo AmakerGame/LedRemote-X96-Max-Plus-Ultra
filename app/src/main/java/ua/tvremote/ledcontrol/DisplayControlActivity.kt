@@ -7,10 +7,10 @@ import androidx.appcompat.app.AppCompatActivity
 import ua.tvremote.ledcontrol.databinding.ActivityDisplayControlBinding
 
 /**
- * Дисплей (VFD) керується тим самим "led" атрибутом, але вимкнення робиться
- * спеціальним значенням "tcd1" і після цього дисплей сам не повертається —
- * потрібен реальний перезапуск приставки. Тому тут лише дві дії: Увімкнути / Вимкнути,
- * без режимів App Active / Script / Time, які є у решти LED.
+ * The display (VFD) is driven by the same "led" attribute as the main LED, but disabling it
+ * uses the special value "tcd1", after which the display does not come back on its own —
+ * a real device reboot is required. So this screen only exposes two actions: Enable / Disable,
+ * without the App Active / Script / Time modes that the other LEDs have.
  */
 class DisplayControlActivity : AppCompatActivity() {
 
@@ -33,12 +33,26 @@ class DisplayControlActivity : AppCompatActivity() {
     private fun onEnableClicked() {
         val wasOff = !repo.isDisplayDesiredOn()
         repo.setDisplayDesiredOn(true)
-        if (wasOff) {
-            // Реальне повернення зображення на VFD можливе лише після повного reboot,
-            // просто записом атрибута дисплей назад не вмикається.
-            Toast.makeText(this, R.string.restart_required, Toast.LENGTH_LONG).show()
-        }
         refreshStatus()
+
+        if (wasOff) {
+            // The VFD only actually comes back on after a full reboot — simply writing
+            // the attribute back does not re-enable it. We keep "awaiting restart" set
+            // (it only gets cleared by a confirmed real reboot in MonitorService), so the
+            // status text above honestly reflects "enabled, but pending restart" instead
+            // of falsely claiming the display is already on. Offer to restart right away,
+            // or let the user restart later — either way the pending state is preserved
+            // and will resync automatically on the next real reboot.
+            AlertDialog.Builder(this)
+                .setTitle(R.string.restart_apply_title)
+                .setMessage(R.string.restart_apply_message)
+                .setPositiveButton(R.string.restart_now_yes) { _, _ ->
+                    Thread { Shell.exec("reboot") }.start()
+                }
+                .setNegativeButton(R.string.restart_later, null)
+                .setCancelable(false)
+                .show()
+        }
     }
 
     private fun onDisableClicked() {
@@ -68,8 +82,12 @@ class DisplayControlActivity : AppCompatActivity() {
 
     private fun refreshStatus() {
         val on = repo.isDisplayDesiredOn()
-        binding.txtStatus.text = if (on) getString(R.string.display_status_on)
-        else getString(R.string.display_status_off)
-        binding.btnRebootNow.isEnabled = !on
+        val pendingRestart = on && repo.isDisplayAwaitingRestart()
+        binding.txtStatus.text = when {
+            pendingRestart -> getString(R.string.display_status_pending)
+            on -> getString(R.string.display_status_on)
+            else -> getString(R.string.display_status_off)
+        }
+        binding.btnRebootNow.isEnabled = !on || pendingRestart
     }
 }

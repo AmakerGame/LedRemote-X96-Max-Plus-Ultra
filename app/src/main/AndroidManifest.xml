@@ -50,6 +50,11 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
         <receiver
             android:name=".BootReceiver"
             android:exported="true"

@@ -26,6 +26,9 @@ class MainActivity : AppCompatActivity() {
         binding.btnLanguage.setOnClickListener {
             startActivity(Intent(this, LanguageActivity::class.java))
         }
+        binding.btnAbout.setOnClickListener {
+            startActivity(Intent(this, AboutActivity::class.java))
+        }
         binding.btnUsageAccess.setOnClickListener {
             ConditionUtils.openUsageAccessSettings(this)
         }
@@ -39,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         if (rootGranted) {
             updateDisplayStatusText()
+            binding.recyclerLeds.adapter?.notifyDataSetChanged()
             binding.btnUsageAccess.visibility =
                 if (ConditionUtils.hasUsageAccess(this)) View.GONE else View.VISIBLE
         }
@@ -82,7 +86,7 @@ class MainActivity : AppCompatActivity() {
         items.add(LedListItem.Display)
         LedId.entries.forEach { items.add(LedListItem.Secondary(it)) }
 
-        binding.recyclerLeds.adapter = LedListAdapter(items) { item ->
+        binding.recyclerLeds.adapter = LedListAdapter(items, repo) { item ->
             when (item) {
                 is LedListItem.Display -> startActivity(Intent(this, DisplayControlActivity::class.java))
                 is LedListItem.Secondary -> onSecondaryLedClicked(item.id)

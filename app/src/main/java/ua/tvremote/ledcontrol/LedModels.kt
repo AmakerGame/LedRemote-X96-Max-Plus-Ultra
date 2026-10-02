@@ -1,10 +1,10 @@
 package ua.tvremote.ledcontrol
 
-/** sysfs-база для всіх атрибутів meson-vfd */
+/** sysfs base path shared by all meson-vfd attributes. */
 const val VFD_BASE = "/sys/devices/platform/meson-vfd/attr"
 
-/** Головний LED / дисплей керується тим самим атрибутом "led",
- *  але вимкнення робиться спеціальним значенням "tcd1" і вимагає перезапуску приставки. */
+/** The main LED / display is driven by the same "led" attribute, but disabling it uses
+ *  the special value "tcd1" and requires a device reboot to turn back on. */
 const val DISPLAY_ATTR = "led"
 const val DISPLAY_OFF_VALUE = "tcd1"
 
@@ -24,18 +24,29 @@ enum class LedMode {
     OFF, ON, APP_ACTIVE, SCRIPT, TIME
 }
 
-enum class ScriptType {
-    INTERNET,   // світиться, якщо є інтернет
-    SDCARD,     // світиться, якщо вставлена SD-карта / зовнішній накопичувач
-    LAUNCHER    // світиться, якщо зараз активний головний лаунчер (Apps)
+/**
+ * Starter script template shown (pre-filled, editable) for each LED's Script mode.
+ * Every LED gets its own distinct example tied to what it typically represents — the
+ * user is free to edit or replace it entirely. Exit code 0 means "turn the LED on".
+ */
+fun LedId.defaultScriptTemplate(): String = when (this) {
+    LedId.GREEN -> "getprop sys.boot_completed | grep -q 1   # device fully booted"
+    LedId.WLAN -> "ping -c1 -W1 8.8.8.8                      # Wi-Fi has internet"
+    LedId.ETHERNET -> "cat /sys/class/net/eth0/operstate | grep -q up   # cable link up"
+    LedId.USB -> "ls /storage/usbotg* >/dev/null 2>&1        # USB storage mounted"
+    LedId.CARD -> "ls /storage/sdcard1 >/dev/null 2>&1       # SD card mounted"
+    LedId.APP -> "dumpsys activity activities | grep -q mResumedActivity   # an app is on screen"
+    LedId.AGING -> "true                                     # always on (test mode)"
 }
 
 data class LedConfig(
     val id: LedId,
     var mode: LedMode = LedMode.OFF,
-    var selectedApps: MutableSet<String> = mutableSetOf(), // package name-и для APP_ACTIVE
-    var scriptType: ScriptType = ScriptType.INTERNET,
-    var timeFromMinutes: Int = 0,   // хвилини з півночі
+    var selectedApps: MutableSet<String> = mutableSetOf(), // package names for APP_ACTIVE
+    var timeFromMinutes: Int = 0,   // minutes since midnight
     var timeToMinutes: Int = 0,
-    var lastAppliedOn: Boolean? = null // фізичний стан, який востаннє застосовано (кеш, щоб не спамити su)
+    /** Script mode: its own independent shell script for EACH LED.
+     *  Exit code 0 = turn the LED on, anything else = off. Runs via su. */
+    var scriptCommand: String = "",
+    var lastAppliedOn: Boolean? = null // last physically applied state (cache, to avoid spamming su)
 )

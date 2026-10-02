@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -9,85 +10,109 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <RadioGroup
-            android:id="@+id/radioGroupMode"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+        <com.google.android.material.card.MaterialCardView
+            style="@style/SectionCard">
 
-            <RadioButton android:id="@+id/radioOff" android:layout_width="match_parent" android:layout_height="wrap_content" />
-            <RadioButton android:id="@+id/radioOn" android:layout_width="match_parent" android:layout_height="wrap_content" />
-            <RadioButton android:id="@+id/radioAppActive" android:layout_width="match_parent" android:layout_height="wrap_content" />
-            <RadioButton android:id="@+id/radioScript" android:layout_width="match_parent" android:layout_height="wrap_content" />
-            <RadioButton android:id="@+id/radioTime" android:layout_width="match_parent" android:layout_height="wrap_content" />
-        </RadioGroup>
+            <RadioGroup
+                android:id="@+id/radioGroupMode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <LinearLayout
+                <RadioButton android:id="@+id/radioOff" style="@style/ModeRadio" />
+                <RadioButton android:id="@+id/radioOn" style="@style/ModeRadio" />
+                <RadioButton android:id="@+id/radioAppActive" style="@style/ModeRadio" />
+                <RadioButton android:id="@+id/radioScript" style="@style/ModeRadio" />
+                <RadioButton android:id="@+id/radioTime" style="@style/ModeRadio" />
+            </RadioGroup>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/groupApps"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="16dp"
+            style="@style/SectionCard"
             android:visibility="gone">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/select_apps_hint"
-                android:layout_marginBottom="8dp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerApps"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="300dp" />
-        </LinearLayout>
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <LinearLayout
+                <TextView
+                    style="@style/SectionLabel"
+                    android:text="@string/select_apps_hint" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerApps"
+                    android:layout_width="match_parent"
+                    android:layout_height="280dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/groupScript"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="16dp"
+            style="@style/SectionCard"
             android:visibility="gone">
 
-            <Spinner
-                android:id="@+id/spinnerScript"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <LinearLayout
+                <TextView
+                    style="@style/SectionLabel"
+                    android:text="@string/custom_script_hint" />
+
+                <EditText
+                    android:id="@+id/editScript"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minLines="2"
+                    android:gravity="top|start"
+                    android:inputType="textMultiLine"
+                    android:fontFamily="monospace"
+                    android:textSize="13sp"
+                    android:hint="@string/custom_script_placeholder"
+                    android:background="@drawable/edit_bg"
+                    android:padding="12dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/groupTime"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="16dp"
+            style="@style/SectionCard"
             android:visibility="gone">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/time_from" />
-            <TimePicker
-                android:id="@+id/timeFrom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:orientation="vertical"
+                android:padding="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/time_to" />
-            <TimePicker
-                android:id="@+id/timeTo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+                <TextView style="@style/SectionLabel" android:text="@string/time_from" />
+                <TimePicker
+                    android:id="@+id/timeFrom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    style="@style/SectionLabel"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/time_to" />
+                <TimePicker
+                    android:id="@+id/timeTo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="8dp"
             android:text="@string/save" />
 
     </LinearLayout>

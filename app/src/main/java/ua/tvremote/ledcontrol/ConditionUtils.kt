@@ -29,7 +29,7 @@ object ConditionUtils {
         context.startActivity(intent)
     }
 
-    /** Пакет застосунку, що зараз реально відкритий на екрані (не у фоні). */
+    /** Package of the app that is actually open on screen right now (not just in the background). */
     fun currentForegroundPackage(context: Context): String? {
         if (!hasUsageAccess(context)) return null
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
@@ -48,6 +48,11 @@ object ConditionUtils {
         }
         return lastPkg
     }
+
+    // The three helpers below (defaultLauncherPackage / hasInternet / hasSdCard) are not
+    // called by shouldBeOn() directly — the Script mode now runs a free-form per-LED shell
+    // command instead of a fixed preset list. They're kept as small root-free utilities a
+    // user's custom script description can reference, and for possible future presets.
 
     fun defaultLauncherPackage(context: Context): String? {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
@@ -78,12 +83,12 @@ object ConditionUtils {
         return if (fromMinutes <= toMinutes) {
             nowMinutes in fromMinutes..toMinutes
         } else {
-            // діапазон через північ, напр. 22:00-06:00
+            // Range wraps past midnight, e.g. 22:00-06:00
             nowMinutes >= fromMinutes || nowMinutes <= toMinutes
         }
     }
 
-    /** Чи має світитися конкретний LED зараз, згідно з його налаштуваннями. */
+    /** Whether a given LED should be lit right now, according to its configuration. */
     fun shouldBeOn(context: Context, cfg: LedConfig): Boolean {
         return when (cfg.mode) {
             LedMode.OFF -> false
@@ -92,14 +97,11 @@ object ConditionUtils {
                 val fg = currentForegroundPackage(context)
                 fg != null && cfg.selectedApps.contains(fg)
             }
-            LedMode.SCRIPT -> when (cfg.scriptType) {
-                ScriptType.INTERNET -> hasInternet(context)
-                ScriptType.SDCARD -> hasSdCard(context)
-                ScriptType.LAUNCHER -> {
-                    val fg = currentForegroundPackage(context)
-                    val home = defaultLauncherPackage(context)
-                    fg != null && home != null && fg == home
-                }
+            // Each LED has its own independent script. The command runs via su;
+            // exit code 0 means "on", anything else means "off".
+            LedMode.SCRIPT -> {
+                if (cfg.scriptCommand.isBlank()) false
+                else Shell.exec(cfg.scriptCommand).ok
             }
             LedMode.TIME -> isWithinTimeRange(cfg.timeFromMinutes, cfg.timeToMinutes)
         }

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:orientation="vertical"
+    android:padding="32dp">
+
+    <TextView
+        android:id="@+id/txtAppName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <com.google.android.material.card.MaterialCardView style="@style/SectionCard">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView style="@style/SectionLabel" android:text="@string/about_version_label" />
+            <TextView
+                android:id="@+id/txtVersionValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView style="@style/SectionLabel" android:text="@string/about_build_label" />
+            <TextView
+                android:id="@+id/txtBuildValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView style="@style/SectionLabel" android:text="@string/about_developer_label" />
+            <TextView
+                android:id="@+id/txtDeveloperValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView style="@style/SectionLabel" android:text="@string/about_github_label" />
+            <TextView
+                android:id="@+id/txtGithubLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:textColor="@color/accent"
+                android:focusable="true"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackground" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

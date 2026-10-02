@@ -12,8 +12,23 @@ import android.os.Looper
 import androidx.core.app.NotificationCompat
 
 /**
- * Живе у фоні, стежить за динамічними режимами LED (App Active / Script / Time)
- * та застосовує збережений стан при старті (у т.ч. після перезавантаження приставки).
+ * Runs in the background, watches the dynamic LED modes (App Active / Script / Time)
+ * and restores the saved state on start (including after the box reboots).
+ *
+ * IMPORTANT about root: su is only ever invoked in two situations —
+ *  1) on a REAL device reboot, to resync state after sysfs resets to defaults;
+ *  2) when a LED's desired state actually changed (a real echo command into sysfs).
+ * The monitoring loop itself (checking App Active / Script / Time conditions) never
+ * touches root — it only reads Android APIs (UsageStats, time), so it does not spawn
+ * su every tick and does not trigger repeated root prompts.
+ *
+ * BUG FIX: this service can also be (re)started by MainActivity every time the app is
+ * opened in the foreground — that is NOT a device reboot. Re-issuing the "disable
+ * display" command or clearing the "awaiting restart" flag on every such start used to
+ * happen unconditionally and was wrong (extra needless su calls, and the pending-restart
+ * status could silently reset just by reopening the app). It is now gated strictly behind
+ * [LedRepository.consumeBootResyncNeeded], which only becomes true on a genuine
+ * BOOT_COMPLETED broadcast handled by [BootReceiver].
  */
 class MonitorService : Service() {
 
@@ -35,7 +50,12 @@ class MonitorService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        applyDisplayStateOnBoot()
+        // Only touch su / reset caches when this start was triggered by a real reboot.
+        // A plain app-foreground restart of the service must NOT spend any root calls.
+        if (repo.consumeBootResyncNeeded()) {
+            repo.clearAllLastApplied()
+            reapplyDisplayStateAfterReboot()
+        }
         handler.removeCallbacks(tick)
         handler.post(tick)
         return START_STICKY
@@ -48,24 +68,29 @@ class MonitorService : Service() {
         super.onDestroy()
     }
 
-    /** Викликається один раз при старті сервісу: звіряє бажаний стан дисплея з реальністю. */
-    private fun applyDisplayStateOnBoot() {
-        // sysfs скидається на дефолт (увімкнено) після кожного reboot.
-        // Якщо користувач раніше хотів дисплей вимкненим — знову подаємо команду вимкнення.
+    /** Single su call, only after a confirmed real reboot: reconciles the display state. */
+    private fun reapplyDisplayStateAfterReboot() {
+        // sysfs resets to its default (display on) after every reboot.
+        // If the user had previously disabled the display, re-issue the disable command.
         if (!repo.isDisplayDesiredOn()) {
-            Shell.writeAttr("${VFD_BASE}/$DISPLAY_ATTR", DISPLAY_OFF_VALUE)
-        }
-        // Якщо бажаний стан ON — нічого не робимо, бо після reboot дисплей і так увімкнений,
-        // і чекати перезапуску більше не потрібно.
-        if (repo.isDisplayDesiredOn()) {
+            Shell.writeAttr("$VFD_BASE/$DISPLAY_ATTR", DISPLAY_OFF_VALUE)
+        } else {
+            // Desired state is ON — after a reboot the display is on by default,
+            // so the "awaiting restart" pending status can finally be cleared.
             repo.setDisplayAwaitingRestart(false)
         }
     }
 
+    /**
+     * Runs every 5s, but su is only executed when a state actually needs to change.
+     * While the VFD display itself is off, nothing on the box is visible anyway, so the
+     * secondary LEDs are left untouched entirely (saves root calls); they get resynced
+     * automatically on the next real reboot via [reapplyDisplayStateAfterReboot] plus the
+     * forced cache resync above.
+     */
     private fun applyAll() {
-        if (!Shell.hasRoot()) return
-        // Якщо дисплей повністю вимкнений — інші LED все одно фізично не видно,
-        // але команди все одно шлемо, щоб стан зберігався коректно на момент увімкнення.
+        if (!repo.isDisplayDesiredOn()) return
+
         for (cfg in repo.allConfigs()) {
             val shouldBeOn = ConditionUtils.shouldBeOn(this, cfg)
             if (cfg.lastAppliedOn != shouldBeOn) {
@@ -74,6 +99,11 @@ class MonitorService : Service() {
             }
         }
     }
+
+    // NOTE: previously this method also called Shell.hasRoot() on every single tick
+    // (every 5s), which spawned a new su session constantly and was the root cause of
+    // root-access prompts firing in a loop. That check has been removed — su is now only
+    // invoked above, and only when a write is actually needed.
 
     private fun buildNotification(): Notification {
         val channelId = "led_monitor"

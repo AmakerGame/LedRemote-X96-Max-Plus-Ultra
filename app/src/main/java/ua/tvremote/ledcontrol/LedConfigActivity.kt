@@ -1,10 +1,7 @@
 package ua.tvremote.ledcontrol
 
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.TimePicker
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,7 +26,6 @@ class LedConfigActivity : AppCompatActivity() {
         title = getString(ledId.nameRes)
 
         setupModeGroup()
-        setupScriptSpinner()
         setupAppList()
         setupTimePickers()
         applyConfigToUi()
@@ -45,15 +41,6 @@ class LedConfigActivity : AppCompatActivity() {
         binding.radioScript.text = getString(R.string.mode_script)
         binding.radioTime.text = getString(R.string.mode_time)
         binding.radioGroupMode.setOnCheckedChangeListener { _, _ -> updateVisibility() }
-    }
-
-    private fun setupScriptSpinner() {
-        val labels = listOf(
-            getString(R.string.script_internet),
-            getString(R.string.script_sdcard),
-            getString(R.string.script_launcher)
-        )
-        binding.spinnerScript.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, labels)
     }
 
     private fun setupAppList() {
@@ -83,7 +70,8 @@ class LedConfigActivity : AppCompatActivity() {
             LedMode.SCRIPT -> binding.radioScript.isChecked = true
             LedMode.TIME -> binding.radioTime.isChecked = true
         }
-        binding.spinnerScript.setSelection(cfg.scriptType.ordinal)
+        // Each LED gets its own starter template pre-filled when no script was saved yet.
+        binding.editScript.setText(cfg.scriptCommand.ifBlank { ledId.defaultScriptTemplate() })
         setTimePicker(binding.timeFrom, cfg.timeFromMinutes)
         setTimePicker(binding.timeTo, cfg.timeToMinutes)
     }
@@ -113,7 +101,7 @@ class LedConfigActivity : AppCompatActivity() {
             else -> LedMode.OFF
         }
         cfg.selectedApps = appAdapter.getSelected().toMutableSet()
-        cfg.scriptType = ScriptType.entries[binding.spinnerScript.selectedItemPosition]
+        cfg.scriptCommand = binding.editScript.text?.toString()?.trim() ?: ""
         cfg.timeFromMinutes = minutesOf(binding.timeFrom)
         cfg.timeToMinutes = minutesOf(binding.timeTo)
         repo.saveConfig(cfg)
