@@ -31,6 +31,12 @@
     <string name="custom_script_placeholder">e.g.: ping -c1 -W1 8.8.8.8</string>
 
     <string name="select_apps_hint">Select one or more apps:</string>
+    <string name="select_apps_button">Select</string>
+    <string name="select_apps_title">Select apps</string>
+    <string name="no_apps_selected">Nothing selected</string>
+    <string name="tab_user_apps">User apps</string>
+    <string name="tab_system_apps">System apps</string>
+    <string name="done">Done</string>
     <string name="time_from">From:</string>
     <string name="time_to">To:</string>
 
@@ -68,4 +74,9 @@
     <string name="about_github_label">Source code on GitHub</string>
     <string name="about_developer_label">Developer</string>
     <string name="about_developer_value">Edytor Studio</string>
+
+    <plurals name="apps_selected_count">
+        <item quantity="one">%d app selected</item>
+        <item quantity="other">%d apps selected</item>
+    </plurals>
 </resources>

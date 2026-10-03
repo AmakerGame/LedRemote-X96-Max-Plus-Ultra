@@ -43,10 +43,18 @@
                     style="@style/SectionLabel"
                     android:text="@string/select_apps_hint" />
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerApps"
+                <TextView
+                    android:id="@+id/txtSelectedAppsSummary"
                     android:layout_width="match_parent"
-                    android:layout_height="280dp" />
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="12dp" />
+
+                <Button
+                    android:id="@+id/btnSelectApps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/select_apps_button" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

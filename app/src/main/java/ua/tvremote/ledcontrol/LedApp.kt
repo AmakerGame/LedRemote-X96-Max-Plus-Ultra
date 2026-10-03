@@ -19,11 +19,24 @@ class LedApp : Application() {
     companion object {
         const val PREFS = "led_remote_prefs"
         const val KEY_LANG = "app_language" // "uk" | "ru" | "en"
+        val SUPPORTED_LANGS = setOf("uk", "ru", "en")
+
+        /**
+         * Resolves which language to use: the explicitly chosen one if the user picked one
+         * in Settings, otherwise the device's current language if it's one we support —
+         * and English as the fallback for any other (unsupported) device language, instead
+         * of silently falling back to the base `values/` resources (Ukrainian).
+         */
+        fun resolveLanguage(context: Context): String {
+            val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            val chosen = prefs.getString(KEY_LANG, null)
+            if (chosen != null) return chosen
+            val deviceLang = Locale.getDefault().language
+            return if (deviceLang in SUPPORTED_LANGS) deviceLang else "en"
+        }
 
         fun applyLocale(context: Context): Context {
-            val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            val lang = prefs.getString(KEY_LANG, Locale.getDefault().language.ifBlank { "uk" }) ?: "uk"
-            val locale = Locale(lang)
+            val locale = Locale(resolveLanguage(context))
             Locale.setDefault(locale)
             val config = Configuration(context.resources.configuration)
             config.setLocale(locale)

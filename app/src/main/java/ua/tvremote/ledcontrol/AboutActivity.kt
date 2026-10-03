@@ -4,10 +4,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import ua.tvremote.ledcontrol.databinding.ActivityAboutBinding
 
-class AboutActivity : AppCompatActivity() {
+class AboutActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAboutBinding
 

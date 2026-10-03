@@ -31,6 +31,12 @@
     <string name="custom_script_placeholder">наприклад: ping -c1 -W1 8.8.8.8</string>
 
     <string name="select_apps_hint">Оберіть одну або кілька програм:</string>
+    <string name="select_apps_button">Обрати</string>
+    <string name="select_apps_title">Вибір програм</string>
+    <string name="no_apps_selected">Нічого не обрано</string>
+    <string name="tab_user_apps">Користувацькі</string>
+    <string name="tab_system_apps">Системні</string>
+    <string name="done">Готово</string>
     <string name="time_from">Від:</string>
     <string name="time_to">До:</string>
 
@@ -68,4 +74,11 @@
     <string name="about_github_label">Вихідний код на GitHub</string>
     <string name="about_developer_label">Розробник</string>
     <string name="about_developer_value">Edytor Studio</string>
+
+    <plurals name="apps_selected_count">
+        <item quantity="one">Обрано %d програму</item>
+        <item quantity="few">Обрано %d програми</item>
+        <item quantity="many">Обрано %d програм</item>
+        <item quantity="other">Обрано %d програми</item>
+    </plurals>
 </resources>

@@ -55,6 +55,11 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".AppPickerActivity"
+            android:exported="false"
+            android:parentActivityName=".LedConfigActivity" />
+
         <receiver
             android:name=".BootReceiver"
             android:exported="true"

@@ -1,19 +1,18 @@
 package ua.tvremote.ledcontrol
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TimePicker
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import ua.tvremote.ledcontrol.databinding.ActivityLedConfigBinding
 
-class LedConfigActivity : AppCompatActivity() {
+class LedConfigActivity : BaseActivity() {
 
     private lateinit var binding: ActivityLedConfigBinding
     private lateinit var repo: LedRepository
     private lateinit var ledId: LedId
     private lateinit var cfg: LedConfig
-    private lateinit var appAdapter: AppSelectAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,11 +25,12 @@ class LedConfigActivity : AppCompatActivity() {
         title = getString(ledId.nameRes)
 
         setupModeGroup()
-        setupAppList()
         setupTimePickers()
         applyConfigToUi()
         updateVisibility()
+        updateSelectedAppsSummary()
 
+        binding.btnSelectApps.setOnClickListener { openAppPicker() }
         binding.btnSave.setOnClickListener { save() }
     }
 
@@ -43,18 +43,33 @@ class LedConfigActivity : AppCompatActivity() {
         binding.radioGroupMode.setOnCheckedChangeListener { _, _ -> updateVisibility() }
     }
 
-    private fun setupAppList() {
-        val pm = packageManager
-        val launcherIntent = android.content.Intent(android.content.Intent.ACTION_MAIN)
-            .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
-        val apps = pm.queryIntentActivities(launcherIntent, 0)
-            .map { it.activityInfo }
-            .distinctBy { it.packageName }
-            .sortedBy { it.loadLabel(pm).toString().lowercase() }
+    private fun openAppPicker() {
+        val intent = Intent(this, AppPickerActivity::class.java)
+        intent.putStringArrayListExtra(AppPickerActivity.EXTRA_SELECTED, ArrayList(cfg.selectedApps))
+        @Suppress("DEPRECATION")
+        startActivityForResult(intent, REQ_PICK_APPS)
+    }
 
-        appAdapter = AppSelectAdapter(apps, pm, cfg.selectedApps)
-        binding.recyclerApps.layoutManager = LinearLayoutManager(this)
-        binding.recyclerApps.adapter = appAdapter
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_PICK_APPS && resultCode == Activity.RESULT_OK) {
+            val picked = data?.getStringArrayListExtra(AppPickerActivity.EXTRA_SELECTED) ?: arrayListOf()
+            cfg.selectedApps = picked.toMutableSet()
+            updateSelectedAppsSummary()
+        }
+    }
+
+    private fun updateSelectedAppsSummary() {
+        binding.txtSelectedAppsSummary.text = if (cfg.selectedApps.isEmpty()) {
+            getString(R.string.no_apps_selected)
+        } else {
+            resources.getQuantityString(
+                R.plurals.apps_selected_count,
+                cfg.selectedApps.size,
+                cfg.selectedApps.size
+            )
+        }
     }
 
     private fun setupTimePickers() {
@@ -100,7 +115,6 @@ class LedConfigActivity : AppCompatActivity() {
             binding.radioTime.id -> LedMode.TIME
             else -> LedMode.OFF
         }
-        cfg.selectedApps = appAdapter.getSelected().toMutableSet()
         cfg.scriptCommand = binding.editScript.text?.toString()?.trim() ?: ""
         cfg.timeFromMinutes = minutesOf(binding.timeFrom)
         cfg.timeToMinutes = minutesOf(binding.timeTo)
@@ -110,5 +124,6 @@ class LedConfigActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_LED_ID = "extra_led_id"
+        private const val REQ_PICK_APPS = 100
     }
 }

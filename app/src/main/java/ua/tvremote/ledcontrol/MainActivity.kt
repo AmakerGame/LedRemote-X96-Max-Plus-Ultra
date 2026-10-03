@@ -6,11 +6,10 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import ua.tvremote.ledcontrol.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var repo: LedRepository
@@ -40,12 +39,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Usage-access status needs no root at all, so it must be checked unconditionally —
+        // it used to be gated behind `rootGranted`, which is still false on the very first
+        // resume (the root check thread hasn't returned yet), so the button could stay stuck
+        // in its initial state until the user backgrounded and reopened the app once more.
+        refreshUsageAccessButton()
         if (rootGranted) {
             updateDisplayStatusText()
             binding.recyclerLeds.adapter?.notifyDataSetChanged()
-            binding.btnUsageAccess.visibility =
-                if (ConditionUtils.hasUsageAccess(this)) View.GONE else View.VISIBLE
         }
+    }
+
+    private fun refreshUsageAccessButton() {
+        binding.btnUsageAccess.visibility =
+            if (ConditionUtils.hasUsageAccess(this)) View.GONE else View.VISIBLE
     }
 
     private fun checkRootAndInit() {
@@ -62,6 +69,7 @@ class MainActivity : AppCompatActivity() {
                     binding.mainContent.visibility = View.VISIBLE
                     setupLedList()
                     updateDisplayStatusText()
+                    refreshUsageAccessButton()
                     startMonitorService()
                 } else {
                     binding.rootBlock.visibility = View.VISIBLE

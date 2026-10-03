@@ -3,7 +3,6 @@ package ua.tvremote.ledcontrol
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import ua.tvremote.ledcontrol.databinding.ActivityDisplayControlBinding
 
 /**
@@ -12,7 +11,7 @@ import ua.tvremote.ledcontrol.databinding.ActivityDisplayControlBinding
  * a real device reboot is required. So this screen only exposes two actions: Enable / Disable,
  * without the App Active / Script / Time modes that the other LEDs have.
  */
-class DisplayControlActivity : AppCompatActivity() {
+class DisplayControlActivity : BaseActivity() {
 
     private lateinit var binding: ActivityDisplayControlBinding
     private lateinit var repo: LedRepository

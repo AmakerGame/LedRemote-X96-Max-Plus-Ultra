@@ -29,21 +29,35 @@ object ConditionUtils {
         context.startActivity(intent)
     }
 
-    /** Package of the app that is actually open on screen right now (not just in the background). */
+    /**
+     * Package of the app that is actually open on screen right now (not just in the background).
+     *
+     * BUG FIX: this used to only look at events from the last 15 seconds. Android only logs a
+     * MOVE_TO_FOREGROUND/ACTIVITY_RESUMED event the MOMENT focus changes — not continuously
+     * while an app stays open. So as soon as an app had been open for more than ~15s, its
+     * opening event fell out of that window and this function started returning null, turning
+     * the LED off even though the app was still clearly on screen. Fixed by scanning a much
+     * wider window (24h) and keeping the MOST RECENT foreground-transition event found in it —
+     * that event's package is the current foreground app, no matter how long ago it fired.
+     */
     fun currentForegroundPackage(context: Context): String? {
         if (!hasUsageAccess(context)) return null
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val end = System.currentTimeMillis()
-        val begin = end - 15_000
+        val begin = end - 24 * 60 * 60 * 1000L
         val events = usm.queryEvents(begin, end)
         var lastPkg: String? = null
+        var lastTimestamp = 0L
         val event = UsageEvents.Event()
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
             if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ||
                 event.eventType == UsageEvents.Event.ACTIVITY_RESUMED
             ) {
-                lastPkg = event.packageName
+                if (event.timeStamp >= lastTimestamp) {
+                    lastTimestamp = event.timeStamp
+                    lastPkg = event.packageName
+                }
             }
         }
         return lastPkg
