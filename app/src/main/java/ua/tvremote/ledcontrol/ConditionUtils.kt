@@ -63,10 +63,10 @@ object ConditionUtils {
         return lastPkg
     }
 
-    // The three helpers below (defaultLauncherPackage / hasInternet / hasSdCard) are not
-    // called by shouldBeOn() directly — the Script mode now runs a free-form per-LED shell
-    // command instead of a fixed preset list. They're kept as small root-free utilities a
-    // user's custom script description can reference, and for possible future presets.
+    // The three helpers below back Condition mode (see shouldBeOn's CONDITION branch) — all
+    // of them read standard Android APIs and need NO root, so they're safe to call on every
+    // single MonitorService tick and react live to real events (e.g. plugging in an SD card),
+    // unlike Script mode's arbitrary su-requiring command, which is only ever checked once.
 
     fun defaultLauncherPackage(context: Context): String? {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
@@ -82,7 +82,9 @@ object ConditionUtils {
             caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
-    fun hasSdCard(context: Context): Boolean {
+    /** True if any removable volume (SD card or USB OTG storage — Android reports both the
+     *  same way) is currently mounted. No root needed, safe to poll continuously. */
+    fun hasRemovableStorage(context: Context): Boolean {
         return try {
             val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
             sm.storageVolumes.any { it.isRemovable && it.state == android.os.Environment.MEDIA_MOUNTED }
@@ -110,6 +112,16 @@ object ConditionUtils {
             LedMode.APP_ACTIVE -> {
                 val fg = currentForegroundPackage(context)
                 fg != null && cfg.selectedApps.contains(fg)
+            }
+            // No root needed — safe to re-check every tick, reacts live to real events.
+            LedMode.CONDITION -> when (cfg.condition) {
+                BuiltInCondition.INTERNET -> hasInternet(context)
+                BuiltInCondition.REMOVABLE_STORAGE -> hasRemovableStorage(context)
+                BuiltInCondition.LAUNCHER_APP -> {
+                    val fg = currentForegroundPackage(context)
+                    val home = defaultLauncherPackage(context)
+                    fg != null && home != null && fg == home
+                }
             }
             // Each LED has its own independent script. The command runs via su;
             // exit code 0 means "on", anything else means "off".

@@ -22,10 +22,13 @@ class LedRepository(context: Context) {
         val apps = prefs.getStringSet(p + "apps", emptySet())?.toMutableSet() ?: mutableSetOf()
         val from = prefs.getInt(p + "time_from", 0)
         val to = prefs.getInt(p + "time_to", 0)
+        val condition = runCatching {
+            BuiltInCondition.valueOf(prefs.getString(p + "condition", BuiltInCondition.INTERNET.name)!!)
+        }.getOrDefault(BuiltInCondition.INTERNET)
         val scriptCmd = prefs.getString(p + "script_cmd", "") ?: ""
         val lastAppliedRaw = prefs.getInt(p + "last_applied", -1)
         val lastApplied = when (lastAppliedRaw) { 1 -> true; 0 -> false; else -> null }
-        return LedConfig(id, mode, apps, from, to, scriptCmd, lastApplied)
+        return LedConfig(id, mode, apps, from, to, condition, scriptCmd, lastApplied)
     }
 
     fun saveConfig(cfg: LedConfig) {
@@ -35,6 +38,7 @@ class LedRepository(context: Context) {
             .putStringSet(p + "apps", cfg.selectedApps)
             .putInt(p + "time_from", cfg.timeFromMinutes)
             .putInt(p + "time_to", cfg.timeToMinutes)
+            .putString(p + "condition", cfg.condition.name)
             .putString(p + "script_cmd", cfg.scriptCommand)
             .apply()
     }

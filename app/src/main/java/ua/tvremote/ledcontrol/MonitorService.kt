@@ -12,22 +12,35 @@ import android.os.Looper
 import androidx.core.app.NotificationCompat
 
 /**
- * Runs in the background, watches the dynamic LED modes (App Active / Script / Time)
- * and restores the saved state on start (including after the box reboots).
+ * Runs in the background, watches the dynamic LED modes (App Active / Condition / Time) and
+ * restores the saved state on start (including after the box reboots).
  *
- * IMPORTANT about root: su is only ever invoked in two situations —
+ * Condition mode (Internet / removable storage / launcher app) is deliberately included in the
+ * regular tick below, unlike Script mode: it reads plain Android APIs and needs no root to
+ * check, so it's safe to poll every 5s and reacts live to real events (e.g. plugging in an SD
+ * card) — the one-shot limitation described for Script mode does not apply to it.
+ *
+ * IMPORTANT about root: su is only ever invoked in these situations —
  *  1) on a REAL device reboot, to resync state after sysfs resets to defaults;
- *  2) when a LED's desired state actually changed (a real echo command into sysfs).
- * The monitoring loop itself (checking App Active / Script / Time conditions) never
- * touches root — it only reads Android APIs (UsageStats, time), so it does not spawn
- * su every tick and does not trigger repeated root prompts.
+ *  2) when a LED's desired state actually changed (a real echo command into sysfs);
+ *  3) once per Script-mode LED, also only on that same real reboot (see applyScriptModesOnce) —
+ *     never on the repeating tick.
+ * The App Active / Time checks never touch root at all — they only read Android APIs
+ * (UsageStats, the clock).
  *
- * BUG FIX: this service can also be (re)started by MainActivity every time the app is
- * opened in the foreground — that is NOT a device reboot. Re-issuing the "disable
- * display" command or clearing the "awaiting restart" flag on every such start used to
- * happen unconditionally and was wrong (extra needless su calls, and the pending-restart
- * status could silently reset just by reopening the app). It is now gated strictly behind
- * [LedRepository.consumeBootResyncNeeded], which only becomes true on a genuine
+ * BUG FIX (script mode hammering su): Script mode runs a user-supplied shell command to decide
+ * on/off, which genuinely requires su to evaluate — unlike every other mode. It used to be
+ * evaluated inside the same 5s tick as everything else, which meant su was invoked in an
+ * infinite loop for every LED using Script mode (visible as constant superuser activity /
+ * repeated root grants in Magisk). Script-mode LEDs are now excluded from the tick entirely and
+ * are only (re)evaluated once: right after a real reboot, and immediately when the user saves a
+ * script in LedConfigActivity. Between those two moments nothing touches root for them at all.
+ *
+ * BUG FIX: this service can also be (re)started by MainActivity every time the app is opened in
+ * the foreground — that is NOT a device reboot. Re-issuing the "disable display" command,
+ * clearing the "awaiting restart" flag, or re-running scripts on every such start used to
+ * happen unconditionally and was wrong (extra needless su calls). It is now gated strictly
+ * behind [LedRepository.consumeBootResyncNeeded], which only becomes true on a genuine
  * BOOT_COMPLETED broadcast handled by [BootReceiver].
  */
 class MonitorService : Service() {
@@ -55,6 +68,7 @@ class MonitorService : Service() {
         if (repo.consumeBootResyncNeeded()) {
             repo.clearAllLastApplied()
             reapplyDisplayStateAfterReboot()
+            applyScriptModesOnce()
         }
         handler.removeCallbacks(tick)
         handler.post(tick)
@@ -82,7 +96,25 @@ class MonitorService : Service() {
     }
 
     /**
+     * Evaluates every Script-mode LED's command exactly ONCE (one su call each) and writes the
+     * result. Only called right after a real reboot — never from the repeating tick. A user can
+     * also trigger this same one-shot evaluation on demand for a single LED from
+     * LedConfigActivity's "Check now" button when saving a script.
+     */
+    private fun applyScriptModesOnce() {
+        if (!repo.isDisplayDesiredOn()) return
+        for (cfg in repo.allConfigs()) {
+            if (cfg.mode != LedMode.SCRIPT) continue
+            val shouldBeOn = ConditionUtils.shouldBeOn(this, cfg)
+            Shell.writeAttr(cfg.id.sysfsPath, if (shouldBeOn) "1" else "0")
+            repo.setLastApplied(cfg.id, shouldBeOn)
+        }
+    }
+
+    /**
      * Runs every 5s, but su is only executed when a state actually needs to change.
+     * Script-mode LEDs are skipped here entirely (see class doc) — only App Active / Time are
+     * evaluated on this loop, and neither of those needs root just to check its condition.
      * While the VFD display itself is off, nothing on the box is visible anyway, so the
      * secondary LEDs are left untouched entirely (saves root calls); they get resynced
      * automatically on the next real reboot via [reapplyDisplayStateAfterReboot] plus the
@@ -92,6 +124,7 @@ class MonitorService : Service() {
         if (!repo.isDisplayDesiredOn()) return
 
         for (cfg in repo.allConfigs()) {
+            if (cfg.mode == LedMode.SCRIPT) continue
             val shouldBeOn = ConditionUtils.shouldBeOn(this, cfg)
             if (cfg.lastAppliedOn != shouldBeOn) {
                 Shell.writeAttr(cfg.id.sysfsPath, if (shouldBeOn) "1" else "0")
@@ -99,11 +132,6 @@ class MonitorService : Service() {
             }
         }
     }
-
-    // NOTE: previously this method also called Shell.hasRoot() on every single tick
-    // (every 5s), which spawned a new su session constantly and was the root cause of
-    // root-access prompts firing in a loop. That check has been removed — su is now only
-    // invoked above, and only when a write is actually needed.
 
     private fun buildNotification(): Notification {
         val channelId = "led_monitor"

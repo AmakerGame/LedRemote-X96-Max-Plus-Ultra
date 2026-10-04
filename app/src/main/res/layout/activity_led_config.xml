@@ -23,6 +23,7 @@
                 <RadioButton android:id="@+id/radioOff" style="@style/ModeRadio" />
                 <RadioButton android:id="@+id/radioOn" style="@style/ModeRadio" />
                 <RadioButton android:id="@+id/radioAppActive" style="@style/ModeRadio" />
+                <RadioButton android:id="@+id/radioCondition" style="@style/ModeRadio" />
                 <RadioButton android:id="@+id/radioScript" style="@style/ModeRadio" />
                 <RadioButton android:id="@+id/radioTime" style="@style/ModeRadio" />
             </RadioGroup>
@@ -59,6 +60,34 @@
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/groupCondition"
+            style="@style/SectionCard"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    style="@style/SectionLabel"
+                    android:text="@string/condition_hint" />
+
+                <RadioGroup
+                    android:id="@+id/radioGroupCondition"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RadioButton android:id="@+id/radioConditionInternet" style="@style/ModeRadio" />
+                    <RadioButton android:id="@+id/radioConditionStorage" style="@style/ModeRadio" />
+                    <RadioButton android:id="@+id/radioConditionLauncher" style="@style/ModeRadio" />
+                </RadioGroup>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/groupScript"
             style="@style/SectionCard"
             android:visibility="gone">
@@ -85,6 +114,18 @@
                     android:hint="@string/custom_script_placeholder"
                     android:background="@drawable/edit_bg"
                     android:padding="12dp" />
+
+                <Button
+                    android:id="@+id/btnCheckScriptNow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/check_script_now" />
+
+                <TextView
+                    style="@style/SectionLabel"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/script_not_polled_hint" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

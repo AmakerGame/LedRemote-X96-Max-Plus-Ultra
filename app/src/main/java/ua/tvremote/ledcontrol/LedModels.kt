@@ -21,7 +21,21 @@ enum class LedId(val attr: String, val nameRes: Int) {
 }
 
 enum class LedMode {
-    OFF, ON, APP_ACTIVE, SCRIPT, TIME
+    OFF, ON, APP_ACTIVE, CONDITION, SCRIPT, TIME
+}
+
+/**
+ * Built-in conditions that need NO root to check (unlike Script mode's arbitrary shell
+ * command) — they're read straight from Android APIs (ConnectivityManager, StorageManager,
+ * UsageStats). Because checking them is free, MonitorService can safely re-evaluate them on
+ * every 5s tick, so they react live to real events (e.g. plugging in an SD card) — the one-shot
+ * limitation of Script mode does not apply here. su is still used, same as every other mode,
+ * only for the final sysfs write when the computed state actually changes.
+ */
+enum class BuiltInCondition(val nameRes: Int) {
+    INTERNET(R.string.condition_internet),
+    REMOVABLE_STORAGE(R.string.condition_storage),
+    LAUNCHER_APP(R.string.condition_launcher)
 }
 
 /**
@@ -45,8 +59,11 @@ data class LedConfig(
     var selectedApps: MutableSet<String> = mutableSetOf(), // package names for APP_ACTIVE
     var timeFromMinutes: Int = 0,   // minutes since midnight
     var timeToMinutes: Int = 0,
+    /** Condition mode: which no-root built-in check to use. Live-polled every tick. */
+    var condition: BuiltInCondition = BuiltInCondition.INTERNET,
     /** Script mode: its own independent shell script for EACH LED.
-     *  Exit code 0 = turn the LED on, anything else = off. Runs via su. */
+     *  Exit code 0 = turn the LED on, anything else = off. Runs via su, evaluated once
+     *  (on Save / after a real reboot / on demand) — never polled, see MonitorService. */
     var scriptCommand: String = "",
     var lastAppliedOn: Boolean? = null // last physically applied state (cache, to avoid spamming su)
 )

@@ -24,11 +24,21 @@
     <string name="mode_off">Disable</string>
     <string name="mode_on">Enable</string>
     <string name="mode_app_active">If app is active</string>
+    <string name="mode_condition">Built-in condition</string>
     <string name="mode_script">Script</string>
     <string name="mode_time">Time (from-to)</string>
 
-    <string name="custom_script_hint">Your own script for this LED (runs as root). Exit code 0 = on, anything else = off.</string>
+    <string name="condition_hint">Checked every ~5s WITHOUT root — reacts instantly to real events (e.g. plugging in an SD card).</string>
+    <string name="condition_internet">Internet (on if connected)</string>
+    <string name="condition_storage">SD card / USB (on if inserted)</string>
+    <string name="condition_launcher">Home launcher is active (the "Apps" screen)</string>
+
+    <string name="custom_script_hint">For anything "Built-in condition" doesn't cover — your own script (runs as root). Exit code 0 = on, anything else = off.</string>
     <string name="custom_script_placeholder">e.g.: ping -c1 -W1 8.8.8.8</string>
+    <string name="check_script_now">Check now</string>
+    <string name="script_check_on">Result: LED on</string>
+    <string name="script_check_off">Result: LED off</string>
+    <string name="script_not_polled_hint">The script does NOT run continuously in the background — only once on save, and once after a real device reboot. Use the button above to check it immediately.</string>
 
     <string name="select_apps_hint">Select one or more apps:</string>
     <string name="select_apps_button">Select</string>

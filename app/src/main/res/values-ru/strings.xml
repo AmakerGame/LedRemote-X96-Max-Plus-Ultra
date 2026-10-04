@@ -24,11 +24,21 @@
     <string name="mode_off">Выключить</string>
     <string name="mode_on">Включить</string>
     <string name="mode_app_active">Если программа активна</string>
+    <string name="mode_condition">Встроенное условие</string>
     <string name="mode_script">Скрипт</string>
     <string name="mode_time">Время (от-до)</string>
 
-    <string name="custom_script_hint">Свой скрипт для этого LED (выполняется с root). Код завершения 0 = включить, любой другой = выключить.</string>
+    <string name="condition_hint">Проверяется каждые ~5с БЕЗ root — реагирует мгновенно на реальные события (напр. подключение SD-карты).</string>
+    <string name="condition_internet">Интернет (горит, если есть соединение)</string>
+    <string name="condition_storage">SD-карта / USB (горит, если подключено)</string>
+    <string name="condition_launcher">Активный главный лаунчер (экран "Приложения")</string>
+
+    <string name="custom_script_hint">Для всего остального, что не покрывает "Встроенное условие" — свой скрипт (выполняется с root). Код завершения 0 = включить, любой другой = выключить.</string>
     <string name="custom_script_placeholder">например: ping -c1 -W1 8.8.8.8</string>
+    <string name="check_script_now">Проверить сейчас</string>
+    <string name="script_check_on">Результат: LED включён</string>
+    <string name="script_check_off">Результат: LED выключен</string>
+    <string name="script_not_polled_hint">Скрипт НЕ выполняется постоянно в фоне — только один раз при сохранении и после реального перезапуска приставки. Для немедленной проверки нажмите кнопку выше.</string>
 
     <string name="select_apps_hint">Выберите одно или несколько приложений:</string>
     <string name="select_apps_button">Выбрать</string>

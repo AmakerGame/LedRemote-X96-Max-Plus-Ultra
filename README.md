@@ -43,6 +43,43 @@ the **SlimBoxTV** firmware:
   command field), each pre-filled with its own starter template relevant to that LED (e.g.
   a ping check for the Wi-Fi LED, an SD-card mount check for the Card LED). Exit code `0`
   means "turn the LED on", anything else means "off". Fully editable/replaceable.
+- **Fixed Script mode hammering su in a loop.** A custom script genuinely needs root to
+  evaluate (unlike every other mode), and it used to be checked on the same 5s background
+  tick as everything else — meaning su was invoked nonstop for any LED using Script mode.
+  It is now evaluated exactly once: right when you press Save, and once more after a real
+  device reboot. A "Check now" button lets you re-run it on demand in between, with the
+  result shown as a toast — nothing runs it automatically in the background anymore.
+- **Added a "Built-in condition" mode** so live/reactive checks (e.g. "light up when an SD
+  card is inserted") don't need a root script at all: Internet / removable storage (SD card
+  or USB) / home launcher active are all read straight from Android APIs with no su call to
+  *check* them (su is only used, as with every mode, for the final sysfs write when the
+  state actually changes). Because checking needs no root, this mode IS safely polled every
+  5s and reacts live to real hardware/connectivity events — unlike Script mode above, which
+  stays one-shot because an arbitrary shell command genuinely can't be checked without su.
+- **Fixed "If app is active" not detecting the foreground app.** The detector only looked
+  at usage events from the last 15 seconds, but Android only logs a foreground-change event
+  the instant focus switches — not continuously while an app stays open. So the LED would
+  turn off again shortly after the app was opened. It now scans a 24h window and keeps the
+  most recent transition event, which correctly reflects the current foreground app no
+  matter how long it's been open.
+- **Fixed the "Grant usage access" button not disappearing.** Its visibility check was
+  gated behind the root-check flag, which is still false on the very first resume (the
+  root check runs on a background thread), so the button could get stuck showing until the
+  app was backgrounded and reopened once more. It's now checked unconditionally (it needs
+  no root anyway).
+- **Fixed language switching doing nothing.** The chosen locale was only applied at the
+  `Application` level — each `Activity` resolves its own strings independently of that, so
+  switching languages had no visible effect anywhere. All activities now extend a shared
+  `BaseActivity` that applies the locale per-screen. Also: if the device's system language
+  isn't Ukrainian/Russian/English, the app now defaults to English instead of silently
+  falling back to the base (Ukrainian) resources.
+- **More reliable background auto-start.** `BootReceiver` now also issues a root `am
+  start-foreground-service` call as a fallback alongside the normal Android API, since some
+  custom TV firmwares restrict background service starts right after boot even for a
+  BOOT_COMPLETED receiver.
+- **"If app is active" app picker overhauled.** It used to only list apps that have a
+  launcher icon. There's now a dedicated "Select" screen listing every installed app, split
+  into User apps / System apps tabs, with a running "N apps selected" summary.
 - **Added an "About" screen**: GitHub link
   (https://github.com/AmakerGame/LedRemote-X96-Max-Plus-Ultra), build target
   (X96 Max Plus Ultra), and version read directly from the APK (`PackageInfo`) rather than
@@ -68,10 +105,15 @@ the **SlimBoxTV** firmware:
     "Configure anyway".
 - **Secondary LEDs**, each supporting these modes:
   - Enable / Disable (static)
-  - If app is active (multi-select of apps, checked via UsageStats — actual foreground, not
-    background)
-  - Script: its own independent shell script per LED (e.g. `ping -c1 -W1 8.8.8.8` to check
-    for internet)
+  - If app is active (pick any apps via the "Select" screen — User apps / System apps
+    tabs — checked via UsageStats for actual foreground, not background)
+  - Built-in condition: Internet / removable storage (SD card or USB) / home launcher
+    active — no root needed to check, so it's polled live every 5s and reacts instantly to
+    real events (e.g. plugging in an SD card)
+  - Script: its own independent shell script per LED, for anything the built-in conditions
+    don't cover — evaluated once on Save and once after a reboot, never polled in the
+    background (a custom command genuinely needs root just to check it); a "Check now"
+    button re-runs it on demand
   - Time (from-to)
 - **MonitorService** (foreground service) checks the dynamic conditions every 5s and writes
   to sysfs only when the state actually changes (to avoid spamming `su`).

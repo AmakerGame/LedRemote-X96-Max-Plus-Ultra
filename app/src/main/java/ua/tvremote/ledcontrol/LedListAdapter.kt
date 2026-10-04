@@ -67,6 +67,7 @@ class LedListAdapter(
         LedMode.OFF -> ctx.getString(R.string.mode_off)
         LedMode.ON -> ctx.getString(R.string.mode_on)
         LedMode.APP_ACTIVE -> ctx.getString(R.string.mode_app_active)
+        LedMode.CONDITION -> ctx.getString(R.string.mode_condition)
         LedMode.SCRIPT -> ctx.getString(R.string.mode_script)
         LedMode.TIME -> ctx.getString(R.string.mode_time)
     }
