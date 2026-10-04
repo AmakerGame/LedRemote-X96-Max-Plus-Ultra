@@ -31,9 +31,9 @@
     <string name="condition_hint">Checked every ~5s WITHOUT root — reacts instantly to real events (e.g. plugging in an SD card).</string>
     <string name="condition_internet">Internet (on if connected)</string>
     <string name="condition_storage">SD card / USB (on if inserted)</string>
-    <string name="condition_launcher">Home launcher is active (the "Apps" screen)</string>
+    <string name="condition_launcher">Home launcher is active (the \"Apps\" screen)</string>
 
-    <string name="custom_script_hint">For anything "Built-in condition" doesn't cover — your own script (runs as root). Exit code 0 = on, anything else = off.</string>
+    <string name="custom_script_hint">For anything \"Built-in condition\" doesn\'t cover — your own script (runs as root). Exit code 0 = on, anything else = off.</string>
     <string name="custom_script_placeholder">e.g.: ping -c1 -W1 8.8.8.8</string>
     <string name="check_script_now">Check now</string>
     <string name="script_check_on">Result: LED on</string>

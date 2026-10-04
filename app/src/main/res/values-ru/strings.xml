@@ -31,9 +31,9 @@
     <string name="condition_hint">Проверяется каждые ~5с БЕЗ root — реагирует мгновенно на реальные события (напр. подключение SD-карты).</string>
     <string name="condition_internet">Интернет (горит, если есть соединение)</string>
     <string name="condition_storage">SD-карта / USB (горит, если подключено)</string>
-    <string name="condition_launcher">Активный главный лаунчер (экран "Приложения")</string>
+    <string name="condition_launcher">Активный главный лаунчер (экран \"Приложения\")</string>
 
-    <string name="custom_script_hint">Для всего остального, что не покрывает "Встроенное условие" — свой скрипт (выполняется с root). Код завершения 0 = включить, любой другой = выключить.</string>
+    <string name="custom_script_hint">Для всего остального, что не покрывает \"Встроенное условие\" — свой скрипт (выполняется с root). Код завершения 0 = включить, любой другой = выключить.</string>
     <string name="custom_script_placeholder">например: ping -c1 -W1 8.8.8.8</string>
     <string name="check_script_now">Проверить сейчас</string>
     <string name="script_check_on">Результат: LED включён</string>
