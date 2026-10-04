@@ -27,7 +27,12 @@ android {
     signingConfigs {
         if (keystorePropsFile.exists()) {
             create("release") {
-                storeFile = file(keystoreProps["storeFile"] as String)
+                // BUG FIX: plain file(...) here resolves relative to this module's directory
+                // (app/), but the CI workflow writes release.keystore and keystore.properties
+                // into the REPO ROOT — so the keystore was never actually found at build time
+                // ("app/release.keystore not found"). rootProject.file(...) resolves relative
+                // to the root project directory instead, matching where the workflow puts it.
+                storeFile = rootProject.file(keystoreProps["storeFile"] as String)
                 storePassword = keystoreProps["storePassword"] as String
                 keyAlias = keystoreProps["keyAlias"] as String
                 keyPassword = keystoreProps["keyPassword"] as String
