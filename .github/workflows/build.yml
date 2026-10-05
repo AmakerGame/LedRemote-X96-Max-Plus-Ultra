@@ -50,6 +50,7 @@ jobs:
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
       - name: Make gradlew executable
         run: chmod +x gradlew
+      
       - name: Restore keystore from secrets
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -57,34 +58,41 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          # 1. Створюємо папку app, якщо її раптом немає
-          mkdir -p "$GITHUB_WORKSPACE/app"
+          # 1. Створюємо папку app, якщо її немає
+          mkdir -p "${{ github.workspace }}/app"
           
-          # 2. Декодуємо ключ, очищуючи його від переносів рядків та пробілів (часта причина помилок)
-          echo "$KEYSTORE_BASE64" | tr -d '\n\r ' | base64 -d > "$GITHUB_WORKSPACE/app/release.keystore"
+          # 2. Декодуємо ключ, очищуючи його від переносів рядків та пробілів
+          echo "$KEYSTORE_BASE64" | tr -d '\n\r ' | base64 -d > "${{ github.workspace }}/app/release.keystore"
           
-          # 3. Перевіряємо, чи файл створився і чи він не порожній
-          if [ ! -s "$GITHUB_WORKSPACE/app/release.keystore" ]; then
-            echo "ПОМИЛКА: Файл release.keystore порожній або не створений! Перевірте правильність секрету KEYSTORE_BASE64."
+          # 3. ЖОРСТКА ПЕРЕВІРКА: Якщо файл порожній (0 байт), зупиняємо білд
+          if [ ! -s "${{ github.workspace }}/app/release.keystore" ]; then
+            echo "❌ ПОМИЛКА: Файл release.keystore порожній або не створений!"
+            echo "👉 Перевірте, чи секрет KEYSTORE_BASE64 у GitHub Secrets заповнений правильно."
+            echo "👉 Секрет має містити лише Base64-рядок без зайвих пробілів та переносів рядків."
             exit 1
           fi
           
-          # 4. Записуємо файл властивостей у корінь проєкту
+          # 4. Перевіряємо, чи це дійсно Java Keystore
+          echo "--- Перевірка типу файлу ---"
+          file "${{ github.workspace }}/app/release.keystore"
+          
+          # 5. Записуємо файл властивостей у корінь проєкту
           {
-            echo "storeFile=$GITHUB_WORKSPACE/app/release.keystore"
+            echo "storeFile=${{ github.workspace }}/app/release.keystore"
             echo "storePassword=$STORE_PASSWORD"
             echo "keyAlias=$KEY_ALIAS"
             echo "keyPassword=$KEY_PASSWORD"
-          } > "$GITHUB_WORKSPACE/keystore.properties"
+          } > "${{ github.workspace }}/keystore.properties"
           
-          # 5. Копіюємо файл властивостей також у папку app (про всяк випадок, якщо Gradle шукає його там)
-          cp "$GITHUB_WORKSPACE/keystore.properties" "$GITHUB_WORKSPACE/app/keystore.properties"
+          # 6. Копіюємо файл властивостей також у папку app (для сумісності з різними налаштуваннями Gradle)
+          cp "${{ github.workspace }}/keystore.properties" "${{ github.workspace }}/app/keystore.properties"
           
-          # 6. Виводимо діагностичну інформацію в логи
+          # 7. Виводимо діагностичну інформацію в логи
           echo "--- Вміст keystore.properties ---"
-          cat "$GITHUB_WORKSPACE/keystore.properties"
+          cat "${{ github.workspace }}/keystore.properties"
           echo "--- Файли в папці app ---"
-          ls -la "$GITHUB_WORKSPACE/app/"
+          ls -la "${{ github.workspace }}/app/"
+          
       - name: Build signed release APK
         run: ./gradlew assembleRelease
       - name: Attach APK to the release
