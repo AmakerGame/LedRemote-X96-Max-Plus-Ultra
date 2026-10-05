@@ -57,13 +57,15 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 --decode > release.keystore
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/release.keystore"
           {
-            echo "storeFile=release.keystore"
+            echo "storeFile=$GITHUB_WORKSPACE/release.keystore"
             echo "storePassword=$STORE_PASSWORD"
             echo "keyAlias=$KEY_ALIAS"
             echo "keyPassword=$KEY_PASSWORD"
-          } > keystore.properties
+          } > "$GITHUB_WORKSPACE/keystore.properties"
+          echo "Keystore file check:"
+          ls -la "$GITHUB_WORKSPACE/release.keystore"
       - name: Build signed release APK
         run: ./gradlew assembleRelease
       - name: Attach APK to the release
