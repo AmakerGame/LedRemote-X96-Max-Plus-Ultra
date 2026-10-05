@@ -1,0 +1,105 @@
+name: Debug-Test-Release
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  release:
+    types: [ published ]
+
+jobs:
+  test-and-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
+        with:
+          packages: 'platform-tools'
+      - name: Install SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      - name: Unit tests
+        run: ./gradlew test
+      - name: Build debug APK
+        run: ./gradlew assembleDebug
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: ledremote-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+
+  release-apk:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
+        with:
+          packages: 'platform-tools'
+      - name: Install SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      
+      - name: Restore keystore from secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -x  # Показує кожну команду в логах
+          echo "=== ПОЧАТОК СТВОРЕННЯ KEYSTORE ==="
+          mkdir -p "$GITHUB_WORKSPACE/app"
+          
+          # Очищаємо Base64 від заголовків certutil та всіх пробілів/переносів
+          echo "$KEYSTORE_BASE64" | sed '/---/d' | tr -d '\n\r\t ' | base64 --decode > "$GITHUB_WORKSPACE/app/release.keystore"
+          
+          echo "=== ПЕРЕВІРКА ФАЙЛУ ПІСЛЯ ДЕКОДУВАННЯ ==="
+          ls -la "$GITHUB_WORKSPACE/app/release.keystore"
+          file "$GITHUB_WORKSPACE/app/release.keystore"
+          
+          if [ ! -s "$GITHUB_WORKSPACE/app/release.keystore" ]; then
+            echo "❌ ПОМИЛКА: Файл release.keystore порожній або не створений!"
+            echo "Перевірте секрет KEYSTORE_BASE64."
+            exit 1
+          fi
+          
+          # Записуємо keystore.properties у корінь та в папку app
+          for DIR in "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/app"; do
+            {
+              echo "storeFile=$GITHUB_WORKSPACE/app/release.keystore"
+              echo "storePassword=$STORE_PASSWORD"
+              echo "keyAlias=$KEY_ALIAS"
+              echo "keyPassword=$KEY_PASSWORD"
+            } > "$DIR/keystore.properties"
+          done
+          
+          echo "=== ВМІСТ KEYSTORE.PROPERTIES ==="
+          cat "$GITHUB_WORKSPACE/keystore.properties"
+          echo "=== КІНЕЦЬ СТВОРЕННЯ KEYSTORE ==="
+
+      - name: Verify Keystore with keytool
+        env:
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          echo "=== ПЕРЕВІРКА KEYTOOL ==="
+          keytool -list -keystore "$GITHUB_WORKSPACE/app/release.keystore" -storepass "$STORE_PASSWORD" || true
+
+      - name: Build signed release APK
+        run: ./gradlew assembleRelease --stacktrace --info
+
+      - name: Attach APK to the release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v2
+        with:
+          files: app/build/outputs/apk/release/*.apk
