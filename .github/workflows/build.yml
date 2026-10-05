@@ -58,42 +58,42 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo "=== СТВОРЕННЯ KEYSTORE ==="
+          set -x  # Вмикаємо режим відладки: показує кожну команду
+          echo "=== ПОЧАТОК СТВОРЕННЯ KEYSTORE ==="
           mkdir -p "$GITHUB_WORKSPACE/app"
           
-          # Очищаємо Base64 від заголовків certutil (-----BEGIN...) та всіх пробілів/переносів
-          echo "$KEYSTORE_BASE64" | sed '/---/d' | tr -d '\n\r\t ' | base64 -d > "$GITHUB_WORKSPACE/app/release.keystore"
+          # Очищаємо Base64 від заголовків certutil та всіх пробілів/переносів
+          echo "$KEYSTORE_BASE64" | sed '/---/d' | tr -d '\n\r\t ' | base64 --decode > "$GITHUB_WORKSPACE/app/release.keystore"
           
-          # Перевірка, чи файл не порожній
+          echo "=== ПЕРЕВІРКА ФАЙЛУ ПІСЛЯ ДЕКОДУВАННЯ ==="
+          ls -la "$GITHUB_WORKSPACE/app/release.keystore"
+          file "$GITHUB_WORKSPACE/app/release.keystore"
+          
           if [ ! -s "$GITHUB_WORKSPACE/app/release.keystore" ]; then
             echo "❌ ПОМИЛКА: Файл release.keystore порожній або не створений!"
-            echo "👉 Перевірте правильність секрету KEYSTORE_BASE64."
+            echo "Перевірте секрет KEYSTORE_BASE64."
             exit 1
           fi
           
-          # Записуємо keystore.properties у корінь проєкту
-          {
-            echo "storeFile=$GITHUB_WORKSPACE/app/release.keystore"
-            echo "storePassword=$STORE_PASSWORD"
-            echo "keyAlias=$KEY_ALIAS"
-            echo "keyPassword=$KEY_PASSWORD"
-          } > "$GITHUB_WORKSPACE/keystore.properties"
-          
-          # Копіюємо в папку app для сумісності з різними налаштуваннями Gradle
-          cp "$GITHUB_WORKSPACE/keystore.properties" "$GITHUB_WORKSPACE/app/keystore.properties"
+          # Записуємо keystore.properties у корінь та в папку app
+          for DIR in "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/app"; do
+            {
+              echo "storeFile=$GITHUB_WORKSPACE/app/release.keystore"
+              echo "storePassword=$STORE_PASSWORD"
+              echo "keyAlias=$KEY_ALIAS"
+              echo "keyPassword=$KEY_PASSWORD"
+            } > "$DIR/keystore.properties"
+          done
           
           echo "=== ВМІСТ KEYSTORE.PROPERTIES ==="
           cat "$GITHUB_WORKSPACE/keystore.properties"
-          
-          echo "=== ПЕРЕВІРКА ФАЙЛУ ==="
-          ls -la "$GITHUB_WORKSPACE/app/release.keystore"
-          file "$GITHUB_WORKSPACE/app/release.keystore"
+          echo "=== КІНЕЦЬ СТВОРЕННЯ KEYSTORE ==="
 
       - name: Verify Keystore with keytool
         env:
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         run: |
-          echo "Перевірка keytool:"
+          echo "=== ПЕРЕВІРКА KEYTOOL ==="
           keytool -list -keystore "$GITHUB_WORKSPACE/app/release.keystore" -storepass "$STORE_PASSWORD" || true
 
       - name: Build signed release APK
