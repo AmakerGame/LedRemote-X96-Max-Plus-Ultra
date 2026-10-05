@@ -57,10 +57,19 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          # Створюємо файл ключа безпосередньо в папці app, де його очікує Gradle
-          echo "$KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/app/release.keystore"
+          # 1. Створюємо папку app, якщо її раптом немає
+          mkdir -p "$GITHUB_WORKSPACE/app"
           
-          # Записуємо абсолютний шлях до ключа у файл властивостей
+          # 2. Декодуємо ключ, очищуючи його від переносів рядків та пробілів (часта причина помилок)
+          echo "$KEYSTORE_BASE64" | tr -d '\n\r ' | base64 -d > "$GITHUB_WORKSPACE/app/release.keystore"
+          
+          # 3. Перевіряємо, чи файл створився і чи він не порожній
+          if [ ! -s "$GITHUB_WORKSPACE/app/release.keystore" ]; then
+            echo "ПОМИЛКА: Файл release.keystore порожній або не створений! Перевірте правильність секрету KEYSTORE_BASE64."
+            exit 1
+          fi
+          
+          # 4. Записуємо файл властивостей у корінь проєкту
           {
             echo "storeFile=$GITHUB_WORKSPACE/app/release.keystore"
             echo "storePassword=$STORE_PASSWORD"
@@ -68,8 +77,14 @@ jobs:
             echo "keyPassword=$KEY_PASSWORD"
           } > "$GITHUB_WORKSPACE/keystore.properties"
           
-          echo "Keystore file check:"
-          ls -la "$GITHUB_WORKSPACE/app/release.keystore"
+          # 5. Копіюємо файл властивостей також у папку app (про всяк випадок, якщо Gradle шукає його там)
+          cp "$GITHUB_WORKSPACE/keystore.properties" "$GITHUB_WORKSPACE/app/keystore.properties"
+          
+          # 6. Виводимо діагностичну інформацію в логи
+          echo "--- Вміст keystore.properties ---"
+          cat "$GITHUB_WORKSPACE/keystore.properties"
+          echo "--- Файли в папці app ---"
+          ls -la "$GITHUB_WORKSPACE/app/"
       - name: Build signed release APK
         run: ./gradlew assembleRelease
       - name: Attach APK to the release
