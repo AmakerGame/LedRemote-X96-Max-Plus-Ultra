@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Керування LED</string>
+
+    <string name="checking_root">Перевірка root-доступу…</string>
+    <string name="grant_root">Надайте root!</string>
+    <string name="retry">Спробувати знову</string>
+
+    <string name="language">Мова</string>
+    <string name="about">Про програму</string>
+    <string name="save">Зберегти</string>
+    <string name="cancel">Скасувати</string>
+
+    <string name="led_display">Дисплей (VFD)</string>
+    <string name="led_display_hint">Головний екран приставки — лише Увімкнути/Вимкнути</string>
+    <string name="led_green">Зелений LED</string>
+    <string name="led_wlan">Wi-Fi LED</string>
+    <string name="led_ethernet">Ethernet LED</string>
+    <string name="led_usb">USB LED</string>
+    <string name="led_card">Карта (SD) LED</string>
+    <string name="led_app">App LED</string>
+    <string name="led_aging">Aging LED (тестовий)</string>
+
+    <string name="mode_off">Вимкнути</string>
+    <string name="mode_on">Увімкнути</string>
+    <string name="mode_app_active">Якщо програма активна</string>
+    <string name="mode_condition">Вбудована умова</string>
+    <string name="mode_script">Скрипт</string>
+    <string name="mode_time">Час (від-до)</string>
+
+    <string name="condition_hint">Перевіряється кожні ~5с БЕЗ root — реагує миттєво на реальні події (напр. підключення SD-картки).</string>
+    <string name="condition_internet">Інтернет (світиться, якщо є з\'єднання)</string>
+    <string name="condition_storage">SD-картка / USB (світиться, якщо підключено)</string>
+    <string name="condition_launcher">Активний головний лаунчер (екран \"Додатки\")</string>
+
+    <string name="custom_script_hint">Для всього іншого, що не покриває \"Вбудована умова\" — свій скрипт (виконується з root). Код завершення 0 = увімкнути, будь-який інший = вимкнути.</string>
+    <string name="custom_script_placeholder">наприклад: ping -c1 -W1 8.8.8.8</string>
+    <string name="check_script_now">Перевірити зараз</string>
+    <string name="script_check_on">Результат: LED увімкнено</string>
+    <string name="script_check_off">Результат: LED вимкнено</string>
+    <string name="script_not_polled_hint">Скрипт НЕ виконується постійно у фоні — лише один раз при збереженні та після реального перезапуску приставки. Для негайної перевірки натисніть кнопку вище.</string>
+
+    <string name="select_apps_hint">Оберіть одну або кілька програм:</string>
+    <string name="select_apps_button">Обрати</string>
+    <string name="select_apps_title">Вибір програм</string>
+    <string name="no_apps_selected">Нічого не обрано</string>
+    <string name="tab_user_apps">Користувацькі</string>
+    <string name="tab_system_apps">Системні</string>
+    <string name="done">Готово</string>
+    <string name="time_from">Від:</string>
+    <string name="time_to">До:</string>
+
+    <string name="display_status_on">Дисплей: увімкнено</string>
+    <string name="display_status_off">Дисплей: вимкнено (потрібен перезапуск для увімкнення)</string>
+    <string name="display_status_pending">Дисплей: увімкнено, очікує перезапуску приставки</string>
+    <string name="command_failed">Не вдалося виконати команду</string>
+
+    <string name="restart_apply_title">Потрібен перезапуск</string>
+    <string name="restart_apply_message">Щоб дисплей фізично увімкнувся, приставку потрібно перезапустити. Зробити це зараз?</string>
+    <string name="restart_now_yes">Так, перезапустити</string>
+    <string name="restart_later">Пізніше</string>
+
+    <string name="reboot_now">Перезапустити зараз</string>
+    <string name="reboot_title">Перезапуск приставки</string>
+    <string name="reboot_message">Приставка буде перезавантажена зараз. Продовжити?</string>
+    <string name="reboot_confirm">Перезапустити</string>
+
+    <string name="display_off_title">Дисплей вимкнено</string>
+    <string name="display_off_message">Дисплей (VFD) зараз повністю вимкнений, тому зміни на цьому LED не будуть видимі, доки ви не увімкнете дисплей і не перезапустите приставку.</string>
+    <string name="go_to_display">Перейти до дисплея</string>
+    <string name="configure_anyway">Все одно налаштувати</string>
+
+    <string name="grant_usage_access">Надати доступ до статистики використання (потрібно для режиму \"Якщо програма активна\")</string>
+    <string name="led_hidden_by_display_off">не видно, дисплей вимкнено</string>
+
+    <string name="monitor_channel_name">Моніторинг LED</string>
+    <string name="monitor_running">Стежить за станом LED-індикаторів</string>
+
+    <!-- Про програму -->
+    <string name="about_title">Про програму</string>
+    <string name="about_build_label">Збірка</string>
+    <string name="about_build_value">X96 Max Plus Ultra (Amlogic S905X4)</string>
+    <string name="about_version_label">Версія</string>
+    <string name="about_github_label">Вихідний код на GitHub</string>
+    <string name="about_developer_label">Розробник</string>
+    <string name="about_developer_value">Edytor Studio</string>
+
+    <plurals name="apps_selected_count">
+        <item quantity="one">Обрано %d програму</item>
+        <item quantity="few">Обрано %d програми</item>
+        <item quantity="many">Обрано %d програм</item>
+        <item quantity="other">Обрано %d програми</item>
+    </plurals>
+</resources>
