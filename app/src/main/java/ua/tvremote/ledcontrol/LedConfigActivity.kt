@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.TimePicker
+import android.widget.NumberPicker
 import android.widget.Toast
 import ua.tvremote.ledcontrol.databinding.ActivityLedConfigBinding
 
@@ -102,9 +102,24 @@ class LedConfigActivity : BaseActivity() {
         }
     }
 
+    /**
+     * BUG FIX / UX: the old android.widget.TimePicker often renders as an analog clock face
+     * on TV builds, which is awkward to operate without a touchscreen (dragging clock hands
+     * with a D-pad doesn't work well). Plain NumberPickers for hour/minute are simple
+     * scrollable columns — Up/Down on the remote moves them one step at a time.
+     */
     private fun setupTimePickers() {
-        binding.timeFrom.setIs24HourView(true)
-        binding.timeTo.setIs24HourView(true)
+        val twoDigits = NumberPicker.Formatter { value -> String.format("%02d", value) }
+        for (np in listOf(binding.npFromHour, binding.npToHour)) {
+            np.minValue = 0
+            np.maxValue = 23
+            np.setFormatter(twoDigits)
+        }
+        for (np in listOf(binding.npFromMinute, binding.npToMinute)) {
+            np.minValue = 0
+            np.maxValue = 59
+            np.setFormatter(twoDigits)
+        }
     }
 
     private fun applyConfigToUi() {
@@ -123,16 +138,11 @@ class LedConfigActivity : BaseActivity() {
         }
         // Each LED gets its own starter template pre-filled when no script was saved yet.
         binding.editScript.setText(cfg.scriptCommand.ifBlank { ledId.defaultScriptTemplate() })
-        setTimePicker(binding.timeFrom, cfg.timeFromMinutes)
-        setTimePicker(binding.timeTo, cfg.timeToMinutes)
+        binding.npFromHour.value = cfg.timeFromMinutes / 60
+        binding.npFromMinute.value = cfg.timeFromMinutes % 60
+        binding.npToHour.value = cfg.timeToMinutes / 60
+        binding.npToMinute.value = cfg.timeToMinutes % 60
     }
-
-    private fun setTimePicker(picker: TimePicker, minutes: Int) {
-        picker.hour = minutes / 60
-        picker.minute = minutes % 60
-    }
-
-    private fun minutesOf(picker: TimePicker): Int = picker.hour * 60 + picker.minute
 
     private fun updateVisibility() {
         binding.groupApps.visibility =
@@ -160,8 +170,8 @@ class LedConfigActivity : BaseActivity() {
             else -> BuiltInCondition.INTERNET
         }
         cfg.scriptCommand = binding.editScript.text?.toString()?.trim() ?: ""
-        cfg.timeFromMinutes = minutesOf(binding.timeFrom)
-        cfg.timeToMinutes = minutesOf(binding.timeTo)
+        cfg.timeFromMinutes = binding.npFromHour.value * 60 + binding.npFromMinute.value
+        cfg.timeToMinutes = binding.npToHour.value * 60 + binding.npToMinute.value
         repo.saveConfig(cfg)
 
         // One single su call right now to apply the new script immediately — MonitorService

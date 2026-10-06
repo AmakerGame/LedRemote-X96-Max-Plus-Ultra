@@ -74,12 +74,21 @@ object ConditionUtils {
         return resolve?.activityInfo?.packageName
     }
 
+    /**
+     * BUG FIX: this used to also require NET_CAPABILITY_VALIDATED — Android's own background
+     * probe confirming the network truly reaches the internet (not just a captive portal).
+     * That validation can take a while to complete right after a device reboot, and on some
+     * custom TV firmware it can stay stuck "not yet validated" until something forces Android
+     * to redo the check — like manually toggling Wi-Fi off and on, which is exactly the
+     * workaround users were finding. Dropping the VALIDATED requirement and only checking
+     * NET_CAPABILITY_INTERNET (the OS's own classification of the active network as an
+     * internet-providing one) reacts immediately and doesn't get stuck after a reboot.
+     */
     fun hasInternet(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = cm.activeNetwork ?: return false
         val caps = cm.getNetworkCapabilities(network) ?: return false
-        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     /** True if any removable volume (SD card or USB OTG storage — Android reports both the
