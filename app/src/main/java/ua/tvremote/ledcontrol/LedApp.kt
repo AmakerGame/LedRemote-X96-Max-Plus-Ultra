@@ -23,9 +23,10 @@ class LedApp : Application() {
 
         /**
          * Resolves which language to use: the explicitly chosen one if the user picked one
-         * in Settings, otherwise the device's current language if it's one we support —
-         * and English as the fallback for any other (unsupported) device language, instead
-         * of silently falling back to the base `values/` resources (Ukrainian).
+         * in Settings, otherwise the device's current language if it's one we support — and
+         * English as the fallback for any other (unsupported) device language. English is also
+         * the project's base `values/` resource set, so this fallback is consistent with what
+         * Android itself would pick if no language were applied at all.
          */
         fun resolveLanguage(context: Context): String {
             val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

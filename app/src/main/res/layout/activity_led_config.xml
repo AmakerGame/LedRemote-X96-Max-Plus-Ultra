@@ -140,10 +140,8 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Plain hour/minute NumberPickers instead of the TimePicker widget:
-                     TimePicker often renders as an analog clock face on TV builds, which is
-                     awkward to operate with a D-pad (needs touch-dragging the hands).
-                     Two simple number columns are easy to move through with Up/Down. -->
+                <!-- Our own TimeStepper component instead of the stock TimePicker/NumberPicker
+                     widgets — see TimeStepper.kt for why. -->
                 <TextView style="@style/SectionLabel" android:text="@string/time_from" />
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -151,28 +149,28 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <NumberPicker
-                        android:id="@+id/npFromHour"
-                        android:layout_width="72dp"
+                    <ua.tvremote.ledcontrol.TimeStepper
+                        android:id="@+id/stepperFromHour"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="6dp"
+                        android:layout_marginHorizontal="8dp"
                         android:text=":"
-                        android:textSize="20sp"
+                        android:textSize="22sp"
                         android:textStyle="bold" />
 
-                    <NumberPicker
-                        android:id="@+id/npFromMinute"
-                        android:layout_width="72dp"
+                    <ua.tvremote.ledcontrol.TimeStepper
+                        android:id="@+id/stepperFromMinute"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                 </LinearLayout>
 
                 <TextView
                     style="@style/SectionLabel"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="20dp"
                     android:text="@string/time_to" />
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -180,22 +178,22 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <NumberPicker
-                        android:id="@+id/npToHour"
-                        android:layout_width="72dp"
+                    <ua.tvremote.ledcontrol.TimeStepper
+                        android:id="@+id/stepperToHour"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="6dp"
+                        android:layout_marginHorizontal="8dp"
                         android:text=":"
-                        android:textSize="20sp"
+                        android:textSize="22sp"
                         android:textStyle="bold" />
 
-                    <NumberPicker
-                        android:id="@+id/npToMinute"
-                        android:layout_width="72dp"
+                    <ua.tvremote.ledcontrol.TimeStepper
+                        android:id="@+id/stepperToMinute"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                 </LinearLayout>
             </LinearLayout>

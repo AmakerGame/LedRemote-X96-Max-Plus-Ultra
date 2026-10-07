@@ -7,8 +7,8 @@ import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
-import android.os.Looper
 import androidx.core.app.NotificationCompat
 
 /**
@@ -45,7 +45,13 @@ import androidx.core.app.NotificationCompat
  */
 class MonitorService : Service() {
 
-    private val handler = Handler(Looper.getMainLooper())
+    // BUG FIX: the tick used to run on the main Looper. Checking "is there real internet" now
+    // does an actual network probe (see ConditionUtils.hasInternet), which is blocking I/O and
+    // would throw NetworkOnMainThreadException there — and the su calls this loop already made
+    // were blocking the main thread the whole time anyway, which is simply the wrong thread for
+    // any of this. Everything here now runs on its own background HandlerThread instead.
+    private val handlerThread = HandlerThread("LedMonitorThread").apply { start() }
+    private val handler = Handler(handlerThread.looper)
     private lateinit var repo: LedRepository
     private val periodMs = 5_000L
 
@@ -79,6 +85,7 @@ class MonitorService : Service() {
 
     override fun onDestroy() {
         handler.removeCallbacks(tick)
+        handlerThread.quitSafely()
         super.onDestroy()
     }
 

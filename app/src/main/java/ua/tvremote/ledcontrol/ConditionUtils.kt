@@ -5,8 +5,6 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Process
 import android.os.storage.StorageManager
 import java.util.Calendar
@@ -75,20 +73,26 @@ object ConditionUtils {
     }
 
     /**
-     * BUG FIX: this used to also require NET_CAPABILITY_VALIDATED — Android's own background
-     * probe confirming the network truly reaches the internet (not just a captive portal).
-     * That validation can take a while to complete right after a device reboot, and on some
-     * custom TV firmware it can stay stuck "not yet validated" until something forces Android
-     * to redo the check — like manually toggling Wi-Fi off and on, which is exactly the
-     * workaround users were finding. Dropping the VALIDATED requirement and only checking
-     * NET_CAPABILITY_INTERNET (the OS's own classification of the active network as an
-     * internet-providing one) reacts immediately and doesn't get stuck after a reboot.
+     * BUG FIX (round 2): dropping NET_CAPABILITY_VALIDATED alone wasn't enough — on this
+     * device's firmware, ConnectivityManager's own NetworkCapabilities snapshot for the active
+     * network can itself get stuck stale after a reboot (still reporting "no internet" even
+     * though the box is clearly online), and nothing short of toggling Wi-Fi forces it to
+     * refresh. Trusting ConnectivityManager's cached state at all is therefore not reliable
+     * here. This now does a real, direct reachability probe instead — a raw TCP connect to a
+     * well-known public host — which reflects actual reality regardless of what the OS's
+     * connectivity cache believes. No root needed, but it IS blocking network I/O, so it must
+     * run off the main thread (MonitorService now ticks on its own background thread for
+     * exactly this reason).
      */
     fun hasInternet(context: Context): Boolean {
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = cm.activeNetwork ?: return false
-        val caps = cm.getNetworkCapabilities(network) ?: return false
-        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        return try {
+            java.net.Socket().use { socket ->
+                socket.connect(java.net.InetSocketAddress("8.8.8.8", 53), 1500)
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     /** True if any removable volume (SD card or USB OTG storage — Android reports both the
