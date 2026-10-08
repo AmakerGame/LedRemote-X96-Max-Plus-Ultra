@@ -85,11 +85,58 @@ object ConditionUtils {
      * exactly this reason).
      */
     fun hasInternet(context: Context): Boolean {
+        // Several independent methods, in order, first success wins (|| short-circuits).
+        // No single one is trusted alone — a firewall blocking one port, a captive network
+        // treating one host specially, or a firmware quirk breaking the OS's own connectivity
+        // cache can each make ONE method lie. Spreading across different hosts, a different
+        // protocol/port, and the OS's own signal makes the overall check resilient to any one
+        // of them being wrong. Runs on a background thread (see MonitorService) — this is
+        // blocking I/O, deliberately so it can try several things one after another.
+        return probeTcp("8.8.8.8", 53) ||          // Google Public DNS
+            probeTcp("1.1.1.1", 53) ||              // Cloudflare DNS
+            probeTcp("8.8.4.4", 443) ||              // Google, different host AND port
+            probeHttp("https://clients3.google.com/generate_204") ||
+            hasInternetPerConnectivityManager(context)
+    }
+
+    private fun probeTcp(host: String, port: Int, timeoutMs: Int = 1200): Boolean {
         return try {
             java.net.Socket().use { socket ->
-                socket.connect(java.net.InetSocketAddress("8.8.8.8", 53), 1500)
+                socket.connect(java.net.InetSocketAddress(host, port), timeoutMs)
             }
             true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /** A tiny HTTP request as a different kind of probe (works even where raw TCP to a DNS
+     *  port is filtered but normal web traffic is not). Expects any response at all, not a
+     *  particular status code — reaching the server at all is already a sign of connectivity. */
+    private fun probeHttp(url: String, timeoutMs: Int = 1500): Boolean {
+        return try {
+            val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+            connection.connectTimeout = timeoutMs
+            connection.readTimeout = timeoutMs
+            connection.instanceFollowRedirects = false
+            connection.requestMethod = "HEAD"
+            connection.connect()
+            connection.disconnect()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /** Last-resort signal from the OS itself. Not trusted alone (it can get stuck stale on some
+     *  firmware after a reboot — see the fix history above) but still a useful extra vote when
+     *  the direct network probes above are themselves blocked for some reason. */
+    private fun hasInternetPerConnectivityManager(context: Context): Boolean {
+        return try {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            val network = cm.activeNetwork ?: return false
+            val caps = cm.getNetworkCapabilities(network) ?: return false
+            caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
         } catch (e: Exception) {
             false
         }
